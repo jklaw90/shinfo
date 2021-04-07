@@ -1,0 +1,39 @@
+syntax = "proto3";
+package shinfo.common;
+
+option go_package = "github.com/jklaw90/shinfo/internal/pb;pb";
+
+message Room {
+    string id = 1;
+    string name = 2;
+    int64 type = 3;
+    bool public = 4;
+    bool archived = 5;
+    string createdAt = 6;
+}
+
+message User {
+    string id = 1; // required
+    string name = 2;
+    string avatar = 3;
+}
+
+message Message {
+    string id = 1;
+    string roomID = 2;
+    User user = 3;
+    int64 type = 4;
+    string entry = 5;
+    map<string, string> metadata = 6;
+}
+
+
+message RoomUser {
+    User user = 1;
+    string joinedAt = 2;
+}
+
+message UserRoom {
+    Room room = 1;
+    string joinedAt = 2;
+}

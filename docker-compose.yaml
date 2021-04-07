@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  cassandra:
+    image: "bitnami/cassandra:latest"
+    ports:
+      - "9042:9042"
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+
+  migration:
+    image: migrate/migrate
+    command: -path=/migrations/ -database cassandra://cassandra@cassandra:9042/shinfo?username=cassandra&password=cassandra&x-multi-statement=true up
+    volumes:
+      - ./migrations:/migrations
+
+  message:
+    image: message-service
+    build:
+      dockerfile: cmd/Dockerfile
+      context: .
+      target: message-service
+    ports:
+      - 3000:3000
+    restart: on-failure:5
+    environment:
+      - CASSANDRA_ADDRESS=cassandra
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+      - SHINFO_LOG_MODE=$SHINFO_LOG_MODE
+
+  room:
+    image: room-service
+    build:
+      dockerfile: cmd/Dockerfile
+      context: .
+      target: room-service
+    ports:
+      - 3001:3000
+    restart: on-failure:5
+    environment:
+      - CASSANDRA_ADDRESS=cassandra
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+      - SHINFO_LOG_MODE=$SHINFO_LOG_MODE

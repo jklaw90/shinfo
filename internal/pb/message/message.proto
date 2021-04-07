@@ -1,0 +1,33 @@
+syntax = "proto3";
+package shinfo.message;
+
+import "internal/pb/common.proto";
+
+option go_package = "github.com/jklaw90/shinfo/internal/pb/message;message";
+
+
+message MessageListRequest {
+    string roomID = 1; // required
+    int64 limit = 2;
+    string nextID = 3;
+}
+message MessageListResponse {
+    repeated shinfo.common.Message messages = 1;
+    string nextID = 2;
+}
+
+message MessageAddRequest {
+    string roomID = 1;
+    shinfo.common.User user = 2;
+    int64 type = 3;
+    string entry = 4;
+    map<string, string> metadata = 5;
+}
+message MessageAddResponse {
+    shinfo.common.Message message = 1;
+}
+
+service Message {
+    rpc List(MessageListRequest) returns (MessageListResponse) {}
+    rpc Add(MessageAddRequest) returns (MessageAddResponse) {}
+}
