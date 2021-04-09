@@ -21,9 +21,12 @@ func (db *MessageRepo) Get(ctx context.Context, roomID, msgID gocql.UUID) (model
 	var msg model.Message
 
 	if err := db.session.
-		Query(
-			`SELECT id, room_id, user, message_type, entry, metadata FROM shinfo.messages
-				WHERE room_id = ? AND id = ?`, roomID, msgID).
+		Query(`
+			SELECT
+				id, room_id, user, message_type, entry, metadata 
+			FROM shinfo.messages
+			WHERE room_id = ? AND id = ?
+			`, roomID, msgID).
 		Scan(&msg.ID, &msg.RoomID, &msg.User, &msg.Type, &msg.Entry, &msg.Metadata); err != nil {
 		return msg, err
 	}
@@ -35,10 +38,13 @@ func (db *MessageRepo) GetMessages(ctx context.Context, roomID gocql.UUID, limit
 	var msg model.Message
 
 	iter := db.session.
-		Query(
-			`SELECT id, room_id, user, message_type, entry, metadata FROM shinfo.messages
-				WHERE room_id = ? AND id < ?
-				LIMIT ?`, roomID, lastSeenID, limit).Iter()
+		Query(`
+			SELECT
+				id, room_id, user, message_type, entry, metadata
+			FROM shinfo.messages
+			WHERE room_id = ? AND id < ?
+			LIMIT ?
+			`, roomID, lastSeenID, limit).Iter()
 	for iter.Scan(&msg.ID, &msg.RoomID, &msg.User, &msg.Type, &msg.Entry, &msg.Metadata) {
 		msgs = append(msgs, msg)
 	}
@@ -47,17 +53,19 @@ func (db *MessageRepo) GetMessages(ctx context.Context, roomID gocql.UUID, limit
 
 func (db *MessageRepo) Create(ctx context.Context, msg model.Message) error {
 	return db.session.
-		Query(
-			`INSERT INTO shinfo.messages (id, room_id, user, message_type, entry, metadata)
-				VALUES (?, ?, ?, ?, ?, ?)`,
-			msg.ID, msg.RoomID, msg.User, msg.Type, msg.Entry, msg.Metadata,
+		Query(`
+			INSERT INTO shinfo.messages (id, room_id, user, message_type, entry, metadata)
+			VALUES (?, ?, ?, ?, ?, ?)
+			`, msg.ID, msg.RoomID, msg.User, msg.Type, msg.Entry, msg.Metadata,
 		).
 		Exec()
 }
 
 func (db *MessageRepo) Delete(ctx context.Context, roomID, messageID gocql.UUID) error {
 	if err := db.session.
-		Query(`DELETE FROM shinfo.messages WHERE room_id = ? and id = ?`, roomID, messageID).
+		Query(`
+			DELETE FROM shinfo.messages
+			WHERE room_id = ? and id = ?`, roomID, messageID).
 		Exec(); err != nil {
 		return err
 	}
