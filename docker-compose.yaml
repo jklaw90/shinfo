@@ -13,7 +13,7 @@ services:
 
   migration:
     image: migrate/migrate
-    command: -path=/migrations/ -database cassandra://cassandra@cassandra:9042/shinfo?username=cassandra&password=cassandra&x-multi-statement=true up
+    command: -path=/migrations/ -database cassandra://cassandra@cassandra:9042/default?username=cassandra&password=cassandra&x-multi-statement=true up
     volumes:
       - ./migrations:/migrations
 

@@ -1,3 +1,6 @@
+CREATE KEYSPACE "shinfo"
+WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+
 Create TYPE shinfo.user(
    id uuid,
    name text,

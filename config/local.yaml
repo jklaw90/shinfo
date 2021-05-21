@@ -1,0 +1,13 @@
+message:
+  logging:
+    level: debug
+
+cassandra:
+  host: localhost
+  port: 9042
+  username: cassandra
+  password: cassandra
+
+redis:
+  host: localhost
+  port: 6379
