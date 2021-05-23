@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // RoomClient is the client API for Room service.
@@ -118,7 +119,7 @@ type UnsafeRoomServer interface {
 }
 
 func RegisterRoomServer(s grpc.ServiceRegistrar, srv RoomServer) {
-	s.RegisterService(&_Room_serviceDesc, srv)
+	s.RegisterService(&Room_ServiceDesc, srv)
 }
 
 func _Room_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -211,7 +212,10 @@ func _Room_AddUser_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Room_serviceDesc = grpc.ServiceDesc{
+// Room_ServiceDesc is the grpc.ServiceDesc for Room service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Room_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "shinfo.room.Room",
 	HandlerType: (*RoomServer)(nil),
 	Methods: []grpc.MethodDesc{
