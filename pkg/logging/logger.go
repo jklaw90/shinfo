@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jklaw90/shinfo/pkg/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -19,8 +20,15 @@ var (
 )
 
 func DefaultLogger() *zap.SugaredLogger {
+	if defaultLogger != nil {
+		return defaultLogger
+	}
 	defaultLoggerOnce.Do(func() {
-		defaultLogger = NewLogger(Config{})
+		config := zap.NewDevelopmentConfig()
+		config.Level = zap.NewAtomicLevelAt(zapcore.Level(zapcore.DebugLevel))
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		l, _ := config.Build()
+		defaultLogger = l.Sugar()
 	})
 	return defaultLogger
 }
@@ -36,16 +44,16 @@ func FromContext(ctx context.Context) *zap.SugaredLogger {
 	return DefaultLogger()
 }
 
-func NewLogger(cfg Config) *zap.SugaredLogger {
+func NewLogger(cfg config.Provider) *zap.SugaredLogger {
 	var l *zap.Logger
 	defaultLoggerOnce.Do(func() {
-		if cfg.IsJson {
+		if cfg.GetBool("logging.json") {
 			config := zap.NewProductionConfig()
-			config.Level = zap.NewAtomicLevelAt(zapcore.Level(cfg.Level))
+			config.Level = zap.NewAtomicLevelAt(zapcore.Level(cfg.GetInt("logging.level")))
 			l, _ = config.Build()
 		} else {
 			config := zap.NewDevelopmentConfig()
-			config.Level = zap.NewAtomicLevelAt(zapcore.Level(cfg.Level))
+			config.Level = zap.NewAtomicLevelAt(zapcore.Level(cfg.GetInt("logging.level")))
 			config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 			l, _ = config.Build()
 		}

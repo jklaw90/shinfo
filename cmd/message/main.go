@@ -1,34 +1,33 @@
 package main
 
 import (
+	"context"
+	"log"
 	"net"
-	"os"
 
 	"github.com/go-redis/redis"
-	"github.com/gocql/gocql"
 	"github.com/jklaw90/shinfo/internal/message"
 	pb "github.com/jklaw90/shinfo/internal/pb/message"
+	"github.com/jklaw90/shinfo/pkg/config"
+	"github.com/jklaw90/shinfo/pkg/database"
 	"github.com/jklaw90/shinfo/pkg/logging"
-	"github.com/jklaw90/shinfo/pkg/utils"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	logger := logging.NewLogger(logging.Config{})
-	addressList, ok := os.LookupEnv("CASSANDRA_ADDRESS")
-	if !ok {
-		logger.Fatal("missing cassandra config")
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	cluster := gocql.NewCluster(utils.StringToList(addressList)...)
-	cluster.Keyspace = "shinfo"
-	cluster.Authenticator = gocql.PasswordAuthenticator{
-		Username: os.Getenv("CASSANDRA_USERNAME"),
-		Password: os.Getenv("CASSANDRA_PASSWORD"),
-	}
+	logger := logging.NewLogger(cfg)
+	ctx := logging.WithLogger(context.Background(), logger)
+
+	logger.Info("starting message service")
 
 	redisClient := redis.NewClient(&redis.Options{})
-	session, err := cluster.CreateSession()
+
+	session, err := database.NewCassandra(ctx, cfg)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -40,13 +39,13 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+
 	s := grpc.NewServer()
 	server, err := message.NewMessageServer(service)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	logger.Info("starting message service")
 	defer logger.Info("closing message service")
 
 	pb.RegisterMessageServer(s, server)

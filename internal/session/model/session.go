@@ -13,5 +13,5 @@ type Session struct {
 }
 
 func (s *Session) Key() string {
-	return fmt.Sprintf("%s:%s", s.UserID.String(), s.DeviceID.String())
+	return fmt.Sprintf("sess:%s:%s", s.UserID.String(), s.DeviceID.String())
 }

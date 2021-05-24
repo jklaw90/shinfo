@@ -12,19 +12,30 @@ import (
 
 type SessionService struct {
 	db  *database.Db
-	cfg *config.Provider
+	cfg config.Provider
 }
 
-func New(ctx context.Context, cfg *config.Provider) *SessionService {
-	return &SessionService{
-		cfg: cfg,
+func New(ctx context.Context, cfg config.Provider) (*SessionService, error) {
+	logger := logging.FromContext(ctx)
+
+	logger.Debugw("session service initializing")
+
+	db, err := database.New(ctx, cfg)
+	if err != nil {
+		logger.Debugw("session service initialization failed")
+		return nil, err
 	}
+
+	return &SessionService{
+		db:  db,
+		cfg: cfg,
+	}, nil
 }
 
 func (s *SessionService) Register(ctx context.Context, session model.Session) error {
 	logger := logging.FromContext(ctx)
 
-	logger.Debugw("registering sessoin", "userID", session.UserID, "deviceID", session.DeviceID, "serverID", session.ServerID)
+	logger.Debugw("registering session", "userID", session.UserID, "deviceID", session.DeviceID, "serverID", session.ServerID)
 
 	if err := s.db.SessionSet(ctx, session); err != nil {
 		return err
@@ -33,12 +44,15 @@ func (s *SessionService) Register(ctx context.Context, session model.Session) er
 	return nil
 }
 
-func (s *SessionService) Unregister(ctx context.Context, session model.Session) error {
+func (s *SessionService) Deregister(ctx context.Context, session model.Session) error {
 	logger := logging.FromContext(ctx)
 
-	logger.Debugw("removing sessoin", "userID", session.UserID, "deviceID", session.DeviceID, "serverID", session.ServerID)
+	logger.Debugw("deregistering session", "userID", session.UserID, "deviceID", session.DeviceID, "serverID", session.ServerID)
 
-	s.db.SessionSet(ctx, session)
+	if err := s.db.SessionSet(ctx, session); err != nil {
+		return err
+	}
+
 	return nil
 }
 

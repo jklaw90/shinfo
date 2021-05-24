@@ -1,13 +1,25 @@
+room:
+  address: ":9000"
+
 message:
-  logging:
-    level: debug
+  address: ":9001"
+  ttl: 10m
+
+session:
+  address: ":9002"
+  ttl: 10m
 
 cassandra:
-  host: localhost
+  addresses: localhost
   port: 9042
   username: cassandra
   password: cassandra
+  keyspace: shinfo
 
 redis:
-  host: localhost
-  port: 6379
+  address: localhost:6379
+  database: 0
+
+logging:
+  json: true
+  level: -1

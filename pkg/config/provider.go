@@ -1,11 +1,17 @@
 package config
 
 import (
-	"fmt"
+	"time"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
+
+func init() {
+	pflag.String("config", "../../config/local.yaml", "config file filepath")
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
+}
 
 type Provider interface {
 	GetString(key string) string
@@ -14,22 +20,21 @@ type Provider interface {
 	GetStringMap(key string) map[string]interface{}
 	GetStringMapString(key string) map[string]string
 	GetStringSlice(key string) []string
+	GetDuration(key string) time.Duration
 	Get(key string) interface{}
 	Set(key string, value interface{})
 	IsSet(key string) bool
 }
 
-func New(fileName, path string) (Provider, error) {
+func New() (Provider, error) {
 	v := viper.New()
-	v.SetConfigName(fileName)
-	v.AddConfigPath(path)
+	v.SetConfigFile(viper.GetString("config"))
 	v.WatchConfig()
-	v.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-	})
-	err := viper.ReadInConfig()
+
+	err := v.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
+
 	return v, nil
 }
